@@ -59,7 +59,7 @@ main (int argc, char *argv[])
 //  LogComponentEnable ("MmWaveEnbMac", LOG_LEVEL_INFO);
 //  LogComponentEnable ("MmWaveRrMacScheduler", LOG_LEVEL_INFO);
 
-  //LogComponentEnable ("LteUeRrc", LOG_LEVEL_ALL);
+  LogComponentEnable ("LteUeRrc", LOG_LEVEL_ALL);
   //LogComponentEnable ("LteEnbRrc", LOG_LEVEL_ALL);
   //LogComponentEnable("PropagationLossModel",LOG_LEVEL_ALL);
   //LogComponentEnable("mmWaveInterference",LOG_LEVEL_ALL);
@@ -85,8 +85,10 @@ main (int argc, char *argv[])
 
   NodeContainer enbNodes;
   NodeContainer ueNodes;
+  NodeContainer ueNodes2;
   enbNodes.Create (1);
   ueNodes.Create (1);
+  ueNodes2.Create (1);
 
   Ptr<ListPositionAllocator> enbPositionAlloc = CreateObject<ListPositionAllocator> ();
   enbPositionAlloc->Add (Vector (0.0, 0.0, 0.0));
@@ -99,24 +101,34 @@ main (int argc, char *argv[])
 
   MobilityHelper uemobility;
   Ptr<ListPositionAllocator> uePositionAlloc = CreateObject<ListPositionAllocator> ();
+  Ptr<ListPositionAllocator> uePositionAlloc2 = CreateObject<ListPositionAllocator> ();
   uePositionAlloc->Add (Vector (80.0, 0.0, 0.0));
+  uePositionAlloc2->Add (Vector (-80.0, 0.0, 0.0));
 
   uemobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   uemobility.SetPositionAllocator (uePositionAlloc);
   uemobility.Install (ueNodes);
   BuildingsHelper::Install (ueNodes);
 
+  uemobility.SetPositionAllocator (uePositionAlloc2);
+  uemobility.Install (ueNodes2);
+  BuildingsHelper::Install (ueNodes2);
+
+
   NetDeviceContainer enbNetDev = ptr_mmWave->InstallEnbDevice (enbNodes);
   NetDeviceContainer ueNetDev = ptr_mmWave->InstallUeDevice (ueNodes);
+  NetDeviceContainer ueNetDev2 = ptr_mmWave->InstallUeDevice (ueNodes2);
 
 
   ptr_mmWave->AttachToClosestEnb (ueNetDev, enbNetDev);
+  ptr_mmWave->AttachToClosestEnb (ueNetDev2, enbNetDev);
   ptr_mmWave->EnableTraces ();
 
   // Activate a data radio bearer
   enum EpsBearer::Qci q = EpsBearer::GBR_CONV_VOICE;
   EpsBearer bearer (q);
   ptr_mmWave->ActivateDataRadioBearer (ueNetDev, bearer);
+  ptr_mmWave->ActivateDataRadioBearer (ueNetDev2, bearer);
 
 
 
