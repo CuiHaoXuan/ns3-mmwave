@@ -84,20 +84,29 @@ main (int argc, char *argv[])
    * ptr_mmWave->GetCcPhyParams ().at (0).GetConfigurationParameters ()->SetAttribute("SymbolPerSlot", UintegerValue(30)); */
 
   NodeContainer enbNodes;
+  NodeContainer enbNodes2;
   NodeContainer ueNodes;
   NodeContainer ueNodes2;
   enbNodes.Create (1);
-  ueNodes.Create (1);
+  enbNodes2.Create (1);
+  ueNodes.Create (2);
   ueNodes2.Create (1);
 
   Ptr<ListPositionAllocator> enbPositionAlloc = CreateObject<ListPositionAllocator> ();
-  enbPositionAlloc->Add (Vector (0.0, 0.0, 0.0));
+  Ptr<ListPositionAllocator> enbPositionAlloc2 = CreateObject<ListPositionAllocator> ();
+  enbPositionAlloc->Add (Vector (40.0, 0.0, 0.0));
+  enbPositionAlloc2->Add (Vector (-40.0, 0.0, 0.0));
 
   MobilityHelper enbmobility;
   enbmobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
   enbmobility.SetPositionAllocator (enbPositionAlloc);
   enbmobility.Install (enbNodes);
   BuildingsHelper::Install (enbNodes);
+
+  enbmobility.SetPositionAllocator (enbPositionAlloc2);
+  enbmobility.Install (enbNodes2);
+  BuildingsHelper::Install (enbNodes2);
+
 
   MobilityHelper uemobility;
   Ptr<ListPositionAllocator> uePositionAlloc = CreateObject<ListPositionAllocator> ();
@@ -116,12 +125,13 @@ main (int argc, char *argv[])
 
 
   NetDeviceContainer enbNetDev = ptr_mmWave->InstallEnbDevice (enbNodes);
+  NetDeviceContainer enbNetDev2 = ptr_mmWave->InstallEnbDevice (enbNodes2);
   NetDeviceContainer ueNetDev = ptr_mmWave->InstallUeDevice (ueNodes);
   NetDeviceContainer ueNetDev2 = ptr_mmWave->InstallUeDevice (ueNodes2);
 
 
   ptr_mmWave->AttachToClosestEnb (ueNetDev, enbNetDev);
-  ptr_mmWave->AttachToClosestEnb (ueNetDev2, enbNetDev);
+  ptr_mmWave->AttachToClosestEnb (ueNetDev2, enbNetDev2);
   ptr_mmWave->EnableTraces ();
 
   // Activate a data radio bearer
